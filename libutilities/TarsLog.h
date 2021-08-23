@@ -17,14 +17,14 @@
 #define ERROR LocalRollLogger::ERROR_LOG
 #define FATAL LocalRollLogger::ERROR_LOG
 
-template <class Logger>
+template <class Level>
 class EndlHelper
 {
 public:
-    EndlHelper(Logger&& logger) : m_logger(std::move(logger)) {}
+    EndlHelper(Level level) : m_logger(LOG->log(level)) {}
 
     template <class Message>
-    Logger& operator<<(const Message& message)
+    tars::LoggerStream& operator<<(const Message& message)
     {
         return (m_logger << message);
     }
@@ -32,12 +32,12 @@ public:
     ~EndlHelper() { m_logger << std::endl; }
 
 private:
-    Logger m_logger;
+    tars::LoggerStream m_logger;
 };
 
 #define BCOS_LOG(level)        \
     if (LOG->isNeedLog(level)) \
-    EndlHelper<tars::LoggerStream>(LOG->log(level))
+    EndlHelper(level)
 #define BCOS_STAT_LOG(level)   \
     if (LOG->isNeedLog(level)) \
-    EndlHelper<tars::LoggerStream>(LOG->log(level))
+    EndlHelper(level)
