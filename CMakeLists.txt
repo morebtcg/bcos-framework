@@ -76,6 +76,10 @@ project(bcos-framework VERSION "3.0.0")
 # Suffix like "-rc1" e.t.c. to append to versions wherever needed.
 set(VERSION_SUFFIX "")
 
+if(USE_TARS_LOG)
+    add_definitions("-DUSE_TARS_LOG")
+endif()
+
 # basic setting
 include(Options)
 configure_project()
