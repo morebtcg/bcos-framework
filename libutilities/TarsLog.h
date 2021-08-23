@@ -10,12 +10,12 @@
 #define LOG_DESC(_DESCRIPTION) (_DESCRIPTION)
 #define LOG_KV(_K, _V) "," << (_K) << "=" << (_V)
 
-#define TRACE TarsRollLogger::DEBUG_LOG
-#define DEBUG TarsRollLogger::DEBUG_LOG
-#define INFO TarsRollLogger::INFO_LOG
-#define WARNING TarsRollLogger::WARN_LOG
-#define ERROR TarsRollLogger::ERROR_LOG
-#define FATAL TarsRollLogger::ERROR_LOG
+#define TRACE LocalRollLogger::DEBUG_LOG
+#define DEBUG LocalRollLogger::DEBUG_LOG
+#define INFO LocalRollLogger::INFO_LOG
+#define WARNING LocalRollLogger::WARN_LOG
+#define ERROR LocalRollLogger::ERROR_LOG
+#define FATAL LocalRollLogger::ERROR_LOG
 
 template <class Logger>
 class EndlHelper
