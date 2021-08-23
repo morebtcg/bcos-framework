@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef TARS_LOG_TEST
+#include "servant/TarsLogger.h"
+#endif
 #include <iostream>
 
 #define LOG_BADGE(_NAME) "[" << (_NAME) << "]"

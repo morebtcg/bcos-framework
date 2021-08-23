@@ -1,3 +1,5 @@
+#define TARS_LOG_TEST
+
 #include "libutilities/TarsLog.h"
 #include <boost/test/unit_test.hpp>
 
@@ -38,7 +40,8 @@ struct LogTestFixture
 BOOST_FIXTURE_TEST_SUITE(LogTest, LogTestFixture)
 BOOST_AUTO_TEST_CASE(testLogOut)
 {
-    BCOS_LOG(DEBUG) << "hello world!" << " fisco bcos!";
+    BCOS_LOG(DEBUG) << "hello world!"
+                    << " fisco bcos!";
 }
 
 BOOST_AUTO_TEST_SUITE_END()
