@@ -1,6 +1,5 @@
 #pragma once
 
-#include "servant/TarsLogger.h"
 #include <iostream>
 
 #define LOG_BADGE(_NAME) "[" << (_NAME) << "]"
@@ -22,7 +21,7 @@ public:
     EndlHelper(Logger& logger) : m_logger(logger) {}
 
     template <class Message>
-    EndlHelper& operator<<(Message message)
+    Logger& operator<<(const Message& message)
     {
         return m_logger << message;
     }
