@@ -11,28 +11,32 @@ enum TarsRollLogger
     ERROR_LOG
 };
 
-namespace bcos::test
+namespace tars
 {
-class Log
+class LoggerStreamFactory
 {
 public:
-    bool IsNeedLog(TarsRollLogger level)
+    bool isNeedLog(TarsRollLogger level)
     {
         (void)level;
         return true;
     }
 
-    std::ostream& log(TarsRollLogger level)
+    LoggerStream& log(TarsRollLogger level)
     {
         (void)level;
         return std::cout;
     }
 };
-std::shared_ptr<Log> LOG;
+}  // namespace tars
+
+namespace bcos::test
+{
+std::shared_ptr<tars::LoggerStream> LOG;
 
 struct LogTestFixture
 {
-    LogTestFixture() { LOG = std::make_shared<Log>(); }
+    LogTestFixture() { LOG = std::make_shared<tars::LoggerStreamFactory>(); }
 
     ~LogTestFixture() {}
 };

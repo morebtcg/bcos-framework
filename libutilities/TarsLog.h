@@ -21,23 +21,23 @@ template <class Logger>
 class EndlHelper
 {
 public:
-    EndlHelper(Logger& logger) : m_logger(logger) {}
+    EndlHelper(Logger&& logger) : m_logger(std::move(logger)) {}
 
     template <class Message>
     Logger& operator<<(const Message& message)
     {
-        return m_logger << message;
+        return (m_logger << message);
     }
 
     ~EndlHelper() { m_logger << std::endl; }
 
 private:
-    Logger& m_logger;
+    Logger m_logger;
 };
 
 #define BCOS_LOG(level)        \
-    if (LOG->IsNeedLog(level)) \
-    EndlHelper(LOG->log(level))
+    if (LOG->isNeedLog(level)) \
+    EndlHelper<tars::LoggerStream>(LOG->log(level))
 #define BCOS_STAT_LOG(level)   \
-    if (LOG->IsNeedLog(level)) \
-    EndlHelper(LOG->log(level))
+    if (LOG->isNeedLog(level)) \
+    EndlHelper<tars::LoggerStream>(LOG->log(level))
