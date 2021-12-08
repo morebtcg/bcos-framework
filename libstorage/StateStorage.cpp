@@ -105,8 +105,6 @@ void StateStorage::asyncGetPrimaryKeys(std::string_view table,
 void StateStorage::asyncGetRow(std::string_view tableView, std::string_view keyView,
     std::function<void(Error::UniquePtr, std::optional<Entry>)> _callback)
 {
-    auto lock = std::make_unique<tbb::queuing_rw_mutex::scoped_lock>(m_dataMutex, false);
-
     decltype(m_data)::const_accessor entryIt;
     if (m_data.find(entryIt, std::make_tuple(tableView, keyView)))
     {
@@ -117,7 +115,6 @@ void StateStorage::asyncGetRow(std::string_view tableView, std::string_view keyV
             entryIt.release();
 
             STORAGE_REPORT_GET(tableView, keyView, std::nullopt, "DELETED");
-            lock->release();
             _callback(nullptr, std::nullopt);
         }
         else
@@ -126,7 +123,6 @@ void StateStorage::asyncGetRow(std::string_view tableView, std::string_view keyV
             entryIt.release();
 
             STORAGE_REPORT_GET(tableView, keyView, optionalEntry, "FOUND");
-            lock->release();
             _callback(nullptr, std::move(optionalEntry));
         }
         return;
@@ -140,14 +136,12 @@ void StateStorage::asyncGetRow(std::string_view tableView, std::string_view keyV
     if (prev)
     {
         prev->asyncGetRow(tableView, keyView,
-            [this, lockPtr = lock.release(), prev, table = std::string(tableView),
+            [this, prev, table = std::string(tableView),
                 key = std::string(keyView),
                 _callback](Error::UniquePtr error, std::optional<Entry> entry) {
-                std::unique_ptr<tbb::queuing_rw_mutex::scoped_lock> lock(lockPtr);
 
                 if (error)
                 {
-                    lock->release();
                     _callback(BCOS_ERROR_WITH_PREV_UNIQUE_PTR(
                                   StorageError::ReadError, "Get row from storage failed!", *error),
                         {});
@@ -158,7 +152,6 @@ void StateStorage::asyncGetRow(std::string_view tableView, std::string_view keyV
                 {
                     STORAGE_REPORT_GET(table, key, entry, "PREV FOUND");
 
-                    lock->release();
                     _callback(nullptr,
                         std::make_optional(importExistingEntry(table, key, std::move(*entry))));
                 }
@@ -166,14 +159,12 @@ void StateStorage::asyncGetRow(std::string_view tableView, std::string_view keyV
                 {
                     STORAGE_REPORT_GET(table, key, std::nullopt, "PREV NOT FOUND");
 
-                    lock->release();
                     _callback(nullptr, std::nullopt);
                 }
             });
     }
     else
     {
-        lock->release();
         _callback(nullptr, std::nullopt);
     }
 }
@@ -267,8 +258,6 @@ void StateStorage::asyncSetRow(std::string_view tableNameView, std::string_view 
         return;
     }
 
-    tbb::queuing_rw_mutex::scoped_lock lock(m_dataMutex, false);
-
     auto updatedCapacity = entry.size();
     std::optional<Entry> entryOld;
 
@@ -298,7 +287,6 @@ void StateStorage::asyncSetRow(std::string_view tableNameView, std::string_view 
         {
             STORAGE_REPORT_SET(tableNameView, keyView, std::nullopt, "PURGED NOT EXISTS");
 
-            lock.release();
             callback(nullptr);
             return;
         }
@@ -330,7 +318,6 @@ void StateStorage::asyncSetRow(std::string_view tableNameView, std::string_view 
 
     m_capacity += updatedCapacity;
 
-    lock.release();
     callback(nullptr);
 }
 
@@ -339,7 +326,6 @@ void StateStorage::parallelTraverse(bool onlyDirty,
         const std::string_view& table, const std::string_view& key, const Entry& entry)>
         callback) const
 {
-    tbb::queuing_rw_mutex::scoped_lock lock(m_dataMutex, true);
     oneapi::tbb::parallel_for_each(
         m_data.begin(), m_data.end(), [&](const std::pair<const EntryKey, Entry>& it) {
             auto& entry = it.second;
@@ -384,8 +370,6 @@ std::optional<Table> StateStorage::createTable(std::string _tableName, std::stri
 
 crypto::HashType StateStorage::hash(const bcos::crypto::Hash::Ptr& hashImpl)
 {
-    tbb::queuing_rw_mutex::scoped_lock lock(m_dataMutex, true);
-
     bcos::crypto::HashType totalHash;
 
     if (c_fileLogLevel >= bcos::LogLevel::TRACE)

@@ -171,7 +171,6 @@ private:
     }
 
     tbb::concurrent_hash_map<EntryKey, Entry, EntryKeyHasher> m_data;
-    mutable tbb::queuing_rw_mutex m_dataMutex;
 
     tbb::enumerable_thread_specific<Recoder::Ptr> m_recoder;
 
